@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Passes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .nav {
+            background: #1e40af;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .nav button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .nav button:hover {
+            background: #2563eb;
+        }
+        
+        .nav button.active {
+            background: #1d4ed8;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .estoque-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .estoque-info {
+            flex: 1;
+        }
+        
+        .cartao-numero {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1e40af;
+        }
+        
+        .passes-disponivel {
+            color: #059669;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .passes-zero {
+            color: #dc2626;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .historico-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .historico-compra {
+            border-left: 4px solid #10b981;
+        }
+        
+        .historico-venda {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .historico-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .historico-tipo {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .tipo-compra {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .tipo-venda {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .table th {
+            background: #f9fafb;
+            font-weight: bold;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CONTROLE DE PASSES</h1>
+        </div>
+        
+        <div class="nav">
+            <button onclick="showSection('painel')" class="nav-btn active">📊 Painel</button>
+            <button onclick="showSection('comprar')" class="nav-btn">📥 Comprar Passes</button>
+            <button onclick="showSection('vender')" class="nav-btn">📤 Vender Passes</button>
+            <button onclick="showSection('historico')" class="nav-btn">📋 Histórico</button>
+            <button onclick="showSection('relatorio')" class="nav-btn">📈 Relatório</button>
+        </div>
+        
+        <div class="content">
+            <!-- PAINEL PRINCIPAL -->
+            <div id="painel" class="section active">
+                <h2>ESTOQUE ATUAL</h2>
+                <div id="estoque-lista">
+                    <div class="no-data">Carregando estoque...</div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3>Resumo Rápido</h3>
+                    <div id="resumo-rapido">
+                        <p><strong>Total de cartões:</strong> <span id="total-cartoes">0</span></p>
+                        <p><strong>Total de passes disponíveis:</strong> <span id="total-passes">0</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COMPRAR PASSES -->
+            <div id="comprar" class="section">
+                <h2>COMPRA DE PASSES</h2>
+                <form id="form-compra" onsubmit="registrarCompra(event)">
+                    <div class="form-group">
+                        <label>Número do Cartão:</label>
+                        <input type="text" id="numero-cartao-compra" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Quantidade de Passes:</label>
+                        <input type="number" id="quantidade-compra" min="1" required>
+                    </div>
+                    
+                    <h3 style="margin: 20px 0;">DADOS DE QUEM VENDEU:</h3>
+                    
+                    <div class="form-group">
+                        <label>Nome:</label>
+                        <input type="text" id="vendedor-nome" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Endereço:</label>
+                        <input type="text" id="vendedor-endereco" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Telefone:</label>
+                        <input type="tel" id="vendedor-telefone" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">✅ Registrar Compra</button>
+                    <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
+                </form>
+            </div>
+            
+            <!-- VENDER PASSES -->
+            <div id="vender" class="section">
+                <h2>VENDA DE PASSES</h2>
+                <form id="form-venda" onsubmit="registrarVenda(event)">
+                    <div class="form-group">
+                        <label>Cartão:</label>
+                        <select id="cartao-venda" required onchange="updateMaxVenda()">
+                            <option value="">Selecione um cartão</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Quantidade de Passes:</label>
+                        <input type="number" id="quantidade-venda" min="1" required>
+                        <small id="max-disponivel" style="color: #6b7280;"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Funcionário/Vendedor:</label>
+                        <input type="text" id="funcionario-nome" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">✅ Registrar Venda</button>
+                    <button type="reset" class="btn btn-secondary" onclick="limparFormVenda()">🔄 Limpar</button>
+                </form>
+            </div>
+            
+            <!-- HISTÓRICO -->
+            <div id="historico" class="section">
+                <h2>HISTÓRICO DE MOVIMENTAÇÕES</h2>
+                <div id="historico-lista">
+                    <div class="no-data">Carregando histórico...</div>
+                </div>
+            </div>
+            
+            <!-- RELATÓRIO -->
+            <div id="relatorio" class="section">
+                <h2>RELATÓRIO DETALHADO</h2>
+                
+                <h3>Estoque por Cartão</h3>
+                <table class="table" id="tabela-estoque">
+                    <thead>
+                        <tr>
+                            <th>Cartão</th>
+                            <th>Comprado</th>
+                            <th>Vendido</th>
+                            <th>Disponível</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-estoque">
+                        <tr><td colspan="4" class="no-data">Carregando dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulação de banco de dados usando localStorage
+        let compras = JSON.parse(localStorage.getItem('compras') || '[]');
+        let vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+        
+        // Salvar dados
+        function salvarDados() {
+            localStorage.setItem('compras', JSON.stringify(compras));
+            localStorage.setItem('vendas', JSON.stringify(vendas));
+        }
+        
+        // Mostrar seção
+        function showSection(sectionId) {
+            // Esconder todas as seções
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remover active dos botões
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar seção selecionada
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Atualizar dados da seção
+            if (sectionId === 'painel') {
+                atualizarPainel();
+            } else if (sectionId === 'vender') {
+                atualizarCartõesDisponiveis();
+            } else if (sectionId === 'historico') {
+                atualizarHistorico();
+            } else if (sectionId === 'relatorio') {
+                atualizarRelatorio();
+            }
+        }
+        
+        // Calcular estoque
+        function calcularEstoque() {
+            const estoque = {};
+            
+            // Adicionar compras
+            compras.forEach(compra => {
+                if (!estoque[compra.numero_cartao]) {
+                    estoque[compra.numero_cartao] = {
+                        numero_cartao: compra.numero_cartao,
+                        total_comprado: 0,
+                        total_vendido: 0,
+                        disponivel: 0
+                    };
+                }
+                estoque[compra.numero_cartao].total_comprado += compra.quantidade;
+            });
+            
+            // Subtrair vendas
+            vendas.forEach(venda => {
+                if (estoque[venda.numero_cartao]) {
+                    estoque[venda.numero_cartao].total_vendido += venda.quantidade;
+                }
+            });
+            
+            // Calcular disponível
+            Object.keys(estoque).forEach(cartao => {
+                estoque[cartao].disponivel = estoque[cartao].total_comprado - estoque[cartao].total_vendido;
+            });
+            
+            return estoque;
+        }
+        
+        // Atualizar painel
+        function atualizarPainel() {
+            const estoque = calcularEstoque();
+            const estoqueArray = Object.values(estoque);
+            const lista = document.getElementById('estoque-lista');
+            
+            if (estoqueArray.length === 0) {
+                lista.innerHTML = '<div class="no-data">Nenhum cartão encontrado. Comece comprando alguns passes!</div>';
+                document.getElementById('total-cartoes').textContent = '0';
+                document.getElementById('total-passes').textContent = '0';
+                return;
+            }
+            
+            lista.innerHTML = '';
+            let totalPasses = 0;
+            
+            estoqueArray.forEach(item => {
+                totalPasses += item.disponivel;
+                
+                const div = document.createElement('div');
+                div.className = 'estoque-item';
+                div.innerHTML = `
+                    <div class="estoque-info">
+                        <div class="cartao-numero">Cartão ${item.numero_cartao}</div>
+                        <div class="passes-disponivel ${item.disponivel === 0 ? 'passes-zero' : ''}">
+                            ${item.disponivel} passes disponíveis
+                        </div>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+            
+            document.getElementById('total-cartoes').textContent = estoqueArray.length;
+            document.getElementById('total-passes').textContent = totalPasses;
+        }
+        
+        // Registrar compra
+        function registrarCompra(event) {
+            event.preventDefault();
+            
+            const compra = {
+                id: Date.now(),
+                numero_cartao: document.getElementById('numero-cartao-compra').value,
+                quantidade: parseInt(document.getElementById('quantidade-compra').value),
+                vendedor_nome: document.getElementById('vendedor-nome').value,
+                vendedor_endereco: document.getElementById('vendedor-endereco').value,
+                vendedor_telefone: document.getElementById('vendedor-telefone').value,
+                data_compra: new Date().toISOString()
+            };
+            
+            compras.push(compra);
+            salvarDados();
+            
+            showAlert('Compra registrada com sucesso!', 'success');
+            document.getElementById('form-compra').reset();
+            atualizarPainel();
+        }
+        
+        // Atualizar cartões disponíveis para venda
+        function atualizarCartõesDisponiveis() {
+            const estoque = calcularEstoque();
+            const select = document.getElementById('cartao-venda');
+            
+            select.innerHTML = '<option value="">Selecione um cartão</option>';
+            
+            Object.values(estoque).forEach(item => {
+                if (item.disponivel > 0) {
+                    const option = document.createElement('option');
+                    option.value = item.numero_cartao;
+                    option.textContent = `Cartão ${item.numero_cartao} (${item.disponivel} disponíveis)`;
+                    option.dataset.disponivel = item.disponivel;
+                    select.appendChild(option);
+                }
+            });
+        }
+        
+        // Atualizar máximo para venda
+        function updateMaxVenda() {
+            const select = document.getElementById('cartao-venda');
+            const quantidadeInput = document.getElementById('quantidade-venda');
+            const maxSpan = document.getElementById('max-disponivel');
+            
+            if (select.value) {
+                const disponivel = select.selectedOptions[0].dataset.disponivel;
+                quantidadeInput.max = disponivel;
+                maxSpan.textContent = `Máximo: ${disponivel} passes`;
+            } else {
+                quantidadeInput.max = '';
+                maxSpan.textContent = '';
+            }
+        }
+        
+        // Registrar venda
+        function registrarVenda(event) {
+            event.preventDefault();
+            
+            const cartao = document.getElementById('cartao-venda').value;
+            const quantidade = parseInt(document.getElementById('quantidade-venda').value);
+            const disponivel = parseInt(document.getElementById('cartao-venda').selectedOptions[0].dataset.disponivel);
+            
+            if (quantidade > disponivel) {
+                showAlert(`Erro: Só há ${disponivel} passes disponíveis para este cartão!`, 'error');
+                return;
+            }
+            
+            const venda = {
+                id: Date.now(),
+                numero_cartao: cartao,
+                quantidade: quantidade,
+                funcionario_nome: document.getElementById('funcionario-nome').value,
+                data_venda: new Date().toISOString()
+            };
+            
+            vendas.push(venda);
+            salvarDados();
+            
+            showAlert('Venda registrada com sucesso!', 'success');
+            limparFormVenda();
+            atualizarCartõesDisponiveis();
+        }
+        
+        // Limpar form venda
+        function limparFormVenda() {
+            document.getElementById('form-venda').reset();
+            document.getElementById('max-disponivel').textContent = '';
+        }
+        
+        // Atualizar histórico
+        function atualizarHistorico() {
+            const lista = document.getElementById('historico-lista');
+            const todas = [...compras.map(c => ({...c, tipo: 'compra'})), ...vendas.map(v => ({...v, tipo: 'venda'}))];
+            todas.sort((a, b) => new Date(b.data_compra || b.data_venda) - new Date(a.data_compra || a.data_venda));
+            
+            if (todas.length === 0) {
+                lista.innerHTML = '<div class="no-data">Nenhuma movimentação encontrada.</div>';
+                return;
+            }
+            
+            lista.innerHTML = '';
+            
+            todas.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `historico-item historico-${item.tipo}`;
+                
+                const data = new Date(item.data_compra || item.data_venda).toLocaleDateString('pt-BR') + ' ' + 
+                            new Date(item.data_compra || item.data_venda).toLocaleTimeString('pt-BR');
+                
+                if (item.tipo === 'compra') {
+                    div.innerHTML = `
+                        <div class="historico-header">
+                            <span class="historico-tipo tipo-compra">COMPRA</span>
+                            <span>${data}</span>
+                        </div>
+                        <p><strong>Cartão:</strong> ${item.numero_cartao} | <strong>Quantidade:</strong> ${item.quantidade} passes</p>
+                        <p><strong>Vendedor:</strong> ${item.vendedor_nome}</p>
+                        <p><strong>Contato:</strong> ${item.vendedor_endereco} | ${item.vendedor_telefone}</p>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="historico-header">
+                            <span class="historico-tipo tipo-venda">VENDA</span>
+                            <span>${data}</span>
+                        </div>
+                        <p><strong>Cartão:</strong> ${item.numero_cartao} | <strong>Quantidade:</strong> ${item.quantidade} passes</p>
+                        <p><strong>Funcionário:</strong> ${item.funcionario_nome}</p>
+                    `;
+                }
+                
+                lista.appendChild(div);
+            });
+        }
+        
+        // Atualizar relatório
+        function atualizarRelatorio() {
+            const estoque = calcularEstoque();
+            const tbody = document.getElementById('tbody-estoque');
+            
+            if (Object.keys(estoque).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="no-data">Nenhum dado encontrado.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            Object.values(estoque).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.numero_cartao}</td>
+                    <td>${item.total_comprado}</td>
+                    <td>${item.total_vendido}</td>
+                    <td style="color: ${item.disponivel > 0 ? '#059669' : '#dc2626'}; font-weight: bold;">
+                        ${item.disponivel}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Mostrar alerta
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(alertDiv, content.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            atualizarPainel();
+        });
+    </script>
+</body>
+</html>
